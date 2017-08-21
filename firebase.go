@@ -13,7 +13,7 @@ type App struct {
 }
 
 const (
-	defaultAppName = "[DEFAULT]"
+	defaultAppName = "safe-deal"
 )
 
 var apps = struct {

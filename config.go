@@ -15,7 +15,7 @@ type (
 func defaultConfig() *Config {
 	return &Config{
 		Name:            defaultAppName,
-		CredentialsPath: "firebase-credentials.json",
+		CredentialsPath: "safe-deal-firebase-adminsdk-w1hcf-bb23211a51.json",
 	}
 }
 
