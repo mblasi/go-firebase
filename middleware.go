@@ -1,8 +1,10 @@
 package firebase
 
 import (
+	"encoding/json"
 	"fmt"
-
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/log"
 	"net/http"
 )
 
@@ -10,8 +12,27 @@ const bearer = "Bearer"
 
 type AuthFunc func(*Token) (bool, error)
 
+type MPAuth struct {
+	MerchantAccessToken string `json:"merchant_access_token"`
+}
+
 func AuthorizationFromParam(req *http.Request) (string, error) {
 	return req.URL.Query().Get("authorization"), nil
+}
+
+func AuthorizationFromBody(req *http.Request) (string, error) {
+	ctx := appengine.NewContext(req)
+
+	var mpAuth MPAuth
+	decoder := json.NewDecoder(req.Body)
+	decoder.Decode(&mpAuth)
+	defer req.Body.Close()
+
+	log.Debugf(ctx, "Request:")
+	log.Debugf(ctx, mpAuth.MerchantAccessToken)
+	log.Debugf(ctx, "==========")
+
+	return mpAuth.MerchantAccessToken, nil
 }
 
 func AuthorizationFromHeader(req *http.Request) (string, error) {
@@ -31,9 +52,12 @@ func AuthorizationFromHeader(req *http.Request) (string, error) {
 func AuthorizationFromRequest(req *http.Request) (string, error) {
 	authorization, err := AuthorizationFromParam(req)
 	if authorization == "" {
-		authorization, err = AuthorizationFromHeader(req)
-		if err != nil {
-			return "", err
+		authorization, err = AuthorizationFromBody(req)
+		if authorization == "" {
+			authorization, err = AuthorizationFromHeader(req)
+			if err != nil {
+				return "", err
+			}
 		}
 	}
 	return authorization, nil
